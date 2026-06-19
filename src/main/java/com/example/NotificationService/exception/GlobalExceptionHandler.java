@@ -1,10 +1,10 @@
 package com.example.NotificationService.exception;
 
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestController
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    
+
     
 }
