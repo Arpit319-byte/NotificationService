@@ -51,9 +51,9 @@ public class NotificationController {
     }
 
     @PostMapping("/{notificationId}/retry")
-    public ResponseEntity<Notification> retryNotificatonById(@PathVariable Long notificationId,@RequestBody Notification notification){
+    public ResponseEntity<Notification> retryNotificatonById(@PathVariable Long notificationId){
 
-        Notification newNotification=iNotificationService.retryNotificationById(notificationId, notification);
+        Notification newNotification=iNotificationService.retryNotificationById(notificationId);
         return ResponseEntity.ok(newNotification);
 
     }

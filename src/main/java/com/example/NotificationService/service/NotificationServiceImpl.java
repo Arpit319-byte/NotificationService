@@ -1,11 +1,16 @@
 package com.example.NotificationService.service;
 
 import java.util.List;
+import java.util.function.Supplier;
 
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import com.example.NotificationService.entity.Notification;
+import com.example.NotificationService.entity.Status;
 import com.example.NotificationService.repository.NotificationRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class NotificationServiceImpl implements INotificationService{
@@ -26,7 +31,9 @@ public class NotificationServiceImpl implements INotificationService{
     @Override
     public Notification getNotificationById(Long id) {
         
-        Notification notification=notificationRepository
+        Notification notification=notificationRepository.findById(id)
+                                  .orElseThrow(()-> new RuntimeException("Notification not found wiht id: "+id));
+
         return notification;
     }
 
@@ -35,17 +42,27 @@ public class NotificationServiceImpl implements INotificationService{
     @Override
     public List<Notification> getNotificationByUserId(Long userId) {
         
-        List<Notification> notificationList= notificationRepository.findByUserId(userId)
-                                             .orElse(null);
-
+        List<Notification> notificationList= notificationRepository.findByUserId(userId);
+                                            
         return notificationList;
     }
 
     @Override
-    public Notification retryNotificationById(Long notificationId,Notification notification) {
+    @Transactional
+    public Notification retryNotificationById(Long notificationId) throws BadRequestException {
         
-        Notification newNotification= notificationRepository.save(notification);
-        return newNotification;
+        Notification notification=notificationRepository.findById(notificationId)
+                                  .orElseThrow(()->new RuntimeException("Notification is not found with id: "+notificationId));
+
+        
+        if(notification.getStatus() != Status.FAILED){
+            throw new BadRequestException("Only the FAILED notifcation can be retired. Current status of notification: "+ notification.getStatus());
+        }
+
+        notification.setStatus(Status.PENDING);
+        
+        Notification saved = notificationRepository.save(notification);
+        return notification;
 
     }
 
