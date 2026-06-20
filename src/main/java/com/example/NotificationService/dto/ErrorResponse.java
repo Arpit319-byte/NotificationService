@@ -15,5 +15,4 @@ public class ErrorResponse {
     private String message;
 
 
-    
 }

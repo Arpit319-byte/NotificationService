@@ -1,13 +1,11 @@
 package com.example.NotificationService.service;
 
 import java.util.List;
-import java.util.function.Supplier;
-
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
-
 import com.example.NotificationService.entity.Notification;
 import com.example.NotificationService.entity.Status;
+import com.example.NotificationService.exception.InvalidNotificationStateException;
+import com.example.NotificationService.exception.ResourceNotFoundException;
 import com.example.NotificationService.repository.NotificationRepository;
 
 import jakarta.transaction.Transactional;
@@ -49,20 +47,19 @@ public class NotificationServiceImpl implements INotificationService{
 
     @Override
     @Transactional
-    public Notification retryNotificationById(Long notificationId) throws BadRequestException {
+    public Notification retryNotificationById(Long notificationId){
         
         Notification notification=notificationRepository.findById(notificationId)
-                                  .orElseThrow(()->new RuntimeException("Notification is not found with id: "+notificationId));
+                                  .orElseThrow(()->new ResourceNotFoundException("Notification is not found with id: "+notificationId));
 
         
         if(notification.getStatus() != Status.FAILED){
-            throw new BadRequestException("Only the FAILED notifcation can be retired. Current status of notification: "+ notification.getStatus());
+            throw new InvalidNotificationStateException("Only the FAILED notifcation can be retired. Current status of notification: "+ notification.getStatus());
         }
 
         notification.setStatus(Status.PENDING);
-        
         Notification saved = notificationRepository.save(notification);
-        return notification;
+        return saved;
 
     }
 
