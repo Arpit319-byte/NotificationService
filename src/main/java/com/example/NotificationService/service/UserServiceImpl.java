@@ -2,67 +2,75 @@ package com.example.NotificationService.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import com.example.NotificationService.dto.user.UserRequest;
+import com.example.NotificationService.dto.user.UserResponse;
 import com.example.NotificationService.entity.User;
 import com.example.NotificationService.exception.DuplicateResourceException;
 import com.example.NotificationService.exception.ResourceNotFoundException;
+import com.example.NotificationService.mapper.UserMapper;
 import com.example.NotificationService.repository.UserRepository;
 
 @Service
 public class UserServiceImpl implements IUserService {
 
-   
     private final UserRepository userRepository;
 
-    public UserServiceImpl(UserRepository userRepository){
-        this.userRepository=userRepository;
-    }
-
-
-    @Override
-    public User getUserById(Long id) {
-        User user=userRepository.findById(id)
-                  .orElseThrow(()->new ResourceNotFoundException("User with the given id: "+id+" is not present in the DB" ));
-
-        return user;
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public List<User> getAllUser() {
-        List<User> userList= userRepository.findAll();
-        return userList;
+    public UserResponse getUserById(Long id) {
+        return UserMapper.toResponse(findUserOrThrow(id));
     }
 
     @Override
-    public User createUser(User user) {
+    public List<UserResponse> getAllUser() {
+        return UserMapper.toResponseList(userRepository.findAll());
+    }
 
-        if(userRepository.existsByEmail(user.getEmail()))
-            throw new DuplicateResourceException("User cannot be created as the email already exists: "+user.getEmail());
+    @Override
+    public UserResponse createUser(UserRequest request) {
+        validateUniqueEmailAndNumber(request.getEmail(), request.getNumber(), null);
 
-        if(userRepository.existsByNumber(user.getNumber()))
-            throw new DuplicateResourceException("User cannot be created as the number already exists: "+user.getNumber());
-
+        User user = UserMapper.toEntity(request);
         User saved = userRepository.save(user);
-        return saved;
+        return UserMapper.toResponse(saved);
     }
 
     @Override
-    public User updateUserById(Long userId, User user) {
-        
-        if(userRepository.findById(userId) == null)
-            throw new ResourceNotFoundException("No user with the userId: "+userId+" is present due which it can not bge udpdated");
+    public UserResponse updateUserById(Long userId, UserRequest request) {
+        User existing = findUserOrThrow(userId);
+        validateUniqueEmailAndNumber(request.getEmail(), request.getNumber(), userId);
 
-        User updatedUser = userRepository.save(user);
-        return updatedUser;
+        UserMapper.updateEntity(existing, request);
+        User saved = userRepository.save(existing);
+        return UserMapper.toResponse(saved);
     }
 
     @Override
-    public Boolean deleteUserById(Long userId) {
-        
-        if(userRepository.findById(userId) == null)
-            throw new ResourceNotFoundException("No user with the userId: "+userId+" is present due which it can not be deleted");
-
+    public void deleteUserById(Long userId) {
+        findUserOrThrow(userId);
         userRepository.deleteById(userId);
-        return true;
     }
-    
+
+    private User findUserOrThrow(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + id));
+    }
+
+    private void validateUniqueEmailAndNumber(String email, String number, Long excludeUserId) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (excludeUserId == null || !user.getId().equals(excludeUserId)) {
+                throw new DuplicateResourceException("Email already exists: " + email);
+            }
+        });
+        userRepository.findByNumber(number).ifPresent(user -> {
+            if (excludeUserId == null || !user.getId().equals(excludeUserId)) {
+                throw new DuplicateResourceException("Number already exists: " + number);
+            }
+        });
+    }
+
 }

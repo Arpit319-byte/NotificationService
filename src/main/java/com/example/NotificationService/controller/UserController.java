@@ -1,7 +1,7 @@
 package com.example.NotificationService.controller;
 
+import jakarta.validation.Valid;
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.example.NotificationService.entity.User;
+import com.example.NotificationService.dto.user.UserRequest;
+import com.example.NotificationService.dto.user.UserResponse;
 import com.example.NotificationService.service.IUserService;
 
 @RestController
@@ -21,48 +21,36 @@ public class UserController {
 
     private final IUserService userService;
 
-    public UserController(IUserService userService){
-        this.userService=userService;
+    public UserController(IUserService userService) {
+        this.userService = userService;
     }
 
-
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable Long userId){
-
-        User user = userService.getUserById(userId);
-        return ResponseEntity.ok(user);
-
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserById(userId));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUser(){
-        
-        List<User> userList = userService.getAllUser();
-        return ResponseEntity.ok(userList);
+    public ResponseEntity<List<UserResponse>> getAllUser() {
+        return ResponseEntity.ok(userService.getAllUser());
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user){
-        
-        User saved = userService.createUser(user);
-        return ResponseEntity.ok(saved);
-
+    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.createUser(request));
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUserById(@PathVariable Long userId,@RequestBody User user){
-
-        User updatedUser = userService.updateUserById(userId,user);
-        return ResponseEntity.ok(updatedUser);
-
+    public ResponseEntity<UserResponse> updateUserById(
+            @PathVariable Long userId,
+            @Valid @RequestBody UserRequest request) {
+        return ResponseEntity.ok(userService.updateUserById(userId, request));
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Boolean> deleteUserById(@PathVariable Long userId){
-
-        Boolean isDeleted = userService.deleteUserById(userId);
-        return ResponseEntity.ok(isDeleted);
+    public ResponseEntity<Void> deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+        return ResponseEntity.noContent().build();
     }
 
-    
 }

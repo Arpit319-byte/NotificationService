@@ -1,15 +1,15 @@
 package com.example.NotificationService.service;
 
 import java.util.List;
-import com.example.NotificationService.entity.User;
+import com.example.NotificationService.dto.user.UserRequest;
+import com.example.NotificationService.dto.user.UserResponse;
 
 public interface IUserService {
 
-    public User getUserById(Long id);
-    public List<User> getAllUser();
-    public User createUser(User user);
-    public User updateUserById(Long userId,User user);
-    public Boolean deleteUserById(Long userId);
+    UserResponse getUserById(Long id);
+    List<UserResponse> getAllUser();
+    UserResponse createUser(UserRequest request);
+    UserResponse updateUserById(Long userId, UserRequest request);
+    void deleteUserById(Long userId);
 
-    
 }

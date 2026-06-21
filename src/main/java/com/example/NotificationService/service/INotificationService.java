@@ -1,13 +1,14 @@
 package com.example.NotificationService.service;
 
 import java.util.List;
-import com.example.NotificationService.entity.Notification;
+import com.example.NotificationService.dto.notification.CreateNotificationRequest;
+import com.example.NotificationService.dto.notification.NotificationResponse;
 
 public interface INotificationService {
-    
-    public Notification createNotificaton(Notification notificaton);
-    public Notification getNotificationById(Long id);
-    public List<Notification> getNotificationByUserId(Long userId);
-    public Notification retryNotificationById(Long notificationId);
+
+    NotificationResponse createNotificaton(CreateNotificationRequest request);
+    NotificationResponse getNotificationById(Long id);
+    List<NotificationResponse> getNotificationByUserId(Long userId);
+    NotificationResponse retryNotificationById(Long notificationId);
 
 }
