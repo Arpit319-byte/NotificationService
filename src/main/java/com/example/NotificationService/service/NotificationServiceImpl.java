@@ -10,20 +10,30 @@ import com.example.NotificationService.exception.InvalidNotificationStateExcepti
 import com.example.NotificationService.exception.ResourceNotFoundException;
 import com.example.NotificationService.mapper.NotificationMapper;
 import com.example.NotificationService.repository.NotificationRepository;
+import com.example.NotificationService.repository.UserRepository;
+
 import jakarta.transaction.Transactional;
 
 @Service
 public class NotificationServiceImpl implements INotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository) {
+    public NotificationServiceImpl(NotificationRepository notificationRepository,UserRepository userRepository) {
         this.notificationRepository = notificationRepository;
+        this.userRepository=userRepository;
     }
 
     @Override
     public NotificationResponse createNotificaton(CreateNotificationRequest request) {
+
         Notification notification = NotificationMapper.toEntity(request);
+
+        if(!userRepository.existsById(notification.getUserId())){
+            throw new ResourceNotFoundException("User not found with id: " + request.getUserId());
+        }
+    
         if (notification.getStatus() == null) {
             notification.setStatus(Status.PENDING);
         }
