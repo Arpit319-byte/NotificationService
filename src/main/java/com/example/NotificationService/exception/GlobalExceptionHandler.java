@@ -32,5 +32,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
     }
+
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ErrorResponse> DuplicateResourceException(DuplicateResourceException ex){
+
+        ErrorResponse error= new ErrorResponse(
+            HttpStatus.CONFLICT.value(),
+            ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
     
 }
